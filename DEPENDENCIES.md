@@ -4,6 +4,84 @@ Installation requirements for scripts in this repository. Most scripts target a 
 
 ---
 
+## Omarchy
+
+[Omarchy](https://github.com/basecamp/omarchy) is Arch-based and ships Hyprland, Waybar, Walker, grim/slurp/satty, mako, wl-clipboard, swaybg, and many CLI tools already. **Do not blindly run the generic Arch install block below on Omarchy** — you will duplicate packages and still miss the X11/dmenu assumptions many scripts make.
+
+Use the Omarchy-specific installer instead:
+
+```bash
+./install-deps-omarchy.sh              # core gaps only
+./install-deps-omarchy.sh --with-aur   # + ueberzugpp, cliphist, dysk
+./install-deps-omarchy.sh --with-photo # + darktable, gimp, exiftool, opencv
+./install-deps-omarchy.sh --with-x11-legacy  # xclip, st, scrot, feh, etc. (last resort)
+```
+
+### Already on Omarchy (skip)
+
+From `install/omarchy-base.packages` and `install/omarchy-other.packages`:
+
+| Tool / role | Omarchy package | Used by scripts |
+|---|---|---|
+| Fuzzy finder | `fzf` | `fzfub`, pickers |
+| JSON | `jq` | `audioswitch`, `define` |
+| ImageMagick | `imagemagick` | `imgmgk`, `screenshot`, `aurora` |
+| Pager | `bat` | `fzfub`, `stats` |
+| Player | `mpv` | `mpv`, `aurora` |
+| Media keys | `playerctl` | `musicplaying` |
+| Volume | `pamixer` | `musicplaying` |
+| ALSA | `alsa-utils` | `record`, `stats` |
+| Pulse compat | `pipewire-pulse` | `pactl` in `audioswitch`, `guitarrec` |
+| Clipboard | `wl-clipboard` | Wayland clipboard (not `xclip`) |
+| Notifications | `mako` | `notify-send` works; skip `dunst` |
+| Editor | `neovim` | `notes` |
+| Screenshots | `grim`, `slurp`, `satty`, `hyprpicker` | Omarchy native stack |
+| Wallpapers | `swaybg` | Omarchy default (not `feh`) |
+| Brightness | `brightnessctl`, `hyprsunset` | not `xrandr --brightness` |
+| Image viewer | `imv` | similar role to `nsxiv` |
+| Image editor | `pinta` | lighter than `gimp` |
+| Music | `spotify` | not `mpd`/`mpc` |
+| Monitor | `btop` | not `htop`/`sysstat` (unless you add them) |
+| Lock screen | `hyprlock` | not `slock` |
+| Launcher | `omarchy-walker` | **not** a `dmenu` pipe replacement |
+| AUR helper | `yay` | for `ueberzugpp`, `cliphist`, etc. |
+
+`ffmpeg` is used by Omarchy's screen-recording scripts but is **not** listed in the base manifest; the installer adds it explicitly if missing.
+
+### Omarchy conflicts (read before installing)
+
+| Scripts assume | Omarchy uses instead | Impact |
+|---|---|---|
+| **X11** (`DISPLAY=:0`, `import`, `x11grab`) | **Hyprland / Wayland** | `record`, `screenshot`, `dimmer`, `fzfub-wallpapermenu`, `minimal-screenshot` need porting |
+| **dmenu** (`echo opts \| dmenu`) | **Walker** / built-in palette | Most menu scripts need `dmenu` installed or rewritten |
+| **xclip** | **wl-clipboard** | Clipboard history scripts need porting |
+| **dwmblocks** + `BLOCK_BUTTON` | **waybar** | Entire `statusbar/` folder needs rework |
+| **pywal** (`wal`) | **aether** + Hypr theme | `wallpapermenu`, `fzfub-wallpapermenu` may fight Omarchy theming |
+| **feh** + **xrandr** | **swaybg** | `random_wallpaper` won't fit Omarchy |
+| **st** hardcoded | **alacritty** / **foot** | `fzfub`, `imgcliphist`, `photomenu` menus |
+| **slock** | **hyprlock** | `shortcuts-menus/sys` suspend path |
+| **mpd** + **mpc** | **Spotify** | `musicpicker` |
+| **gpu-screen-recorder** (Omarchy) | custom `record` script | Prefer Omarchy capture; avoid duplicate recorders |
+
+### Script status on Omarchy
+
+| Status | Scripts |
+|---|---|
+| **Works with core install** (`dmenu`, `curl`, `wget`, `bc`, `ffmpeg`, sensors) | `audioswitch`, `define`, `temp`, `notes`, `mpv`, `editrec`, `imv`, `spin`, `spin-unicode`, `timedate` |
+| **Works after config** | `guitarrec`, `old-audioswitch` (set Pulse sink/source IDs), `photomenu`/`phototransfer` (mount paths, optional photo packages) |
+| **Needs X11 legacy stack or porting** | `screenshot`, `minimal-screenshot`, `imgcliphist`, `txtcliphist`, `img-text-clipboard-history`, `fzfub*`, `record`, `dimmer`, `random_wallpaper`, `wallpapermenu` |
+| **Needs status bar port** | `statusbar/*` (dwmblocks-specific) |
+| **Use Omarchy equivalent instead** | Screen record → `gpu-screen-recorder` / Omarchy capture; screenshots → grim/slurp/satty; lock → `hyprlock`; wallpaper → swaybg + Omarchy theme |
+
+### Recommended Omarchy env
+
+```bash
+export TERMINAL=alacritty   # or foot on newer Omarchy releases
+export EDITOR=nvim
+```
+
+---
+
 ## Quick install
 
 ### Arch Linux
